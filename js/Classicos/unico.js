@@ -2,6 +2,7 @@ import {
   avaliarPalpite,
   palavraExiste,
   sortearPalavrasDoDia,
+  obterDiaAtual,
 } from "../regras.js";
 import {
   criarGrelha,
@@ -15,6 +16,7 @@ import {
 const estado = {
   banco: {},
   palavraAlvo: "",
+  historico: [], // Guarda as palavras já submetidas
   palpiteAtual: [],
   linhaAtual: 0,
   cursorAtivo: 0,
@@ -23,17 +25,24 @@ const estado = {
   jogoTerminado: false,
 };
 
+// Guarda o estado atual no disco do navegador
+function salvarProgresso() {
+  const save = {
+    dia: obterDiaAtual(),
+    historico: estado.historico,
+    linhaAtual: estado.linhaAtual,
+    jogoTerminado: estado.jogoTerminado,
+  };
+  localStorage.setItem("termo_unico", JSON.stringify(save));
+}
+
 export function iniciarModoUnico(bancoDePalavras) {
   estado.banco = bancoDePalavras;
   const palavras5 = bancoDePalavras["5"];
-
   estado.palavraAlvo = sortearPalavrasDoDia(palavras5, 1)[0];
-  console.log("Modo Único - Alvo:", estado.palavraAlvo);
 
   estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
-  estado.linhaAtual = 0;
   estado.cursorAtivo = 0;
-  estado.jogoTerminado = false;
 
   criarGrelha(
     "board-container",
@@ -42,7 +51,51 @@ export function iniciarModoUnico(bancoDePalavras) {
     "unico",
     aoClicarCelula,
   );
-  atualizarInterface();
+
+  // TENTA CARREGAR O SAVE DA MEMÓRIA
+  const save = JSON.parse(localStorage.getItem("termo_unico"));
+  const diaHoje = obterDiaAtual();
+
+  if (save && save.dia === diaHoje) {
+    // Restaura as variáveis
+    estado.historico = save.historico || [];
+    estado.linhaAtual = save.linhaAtual;
+    estado.jogoTerminado = save.jogoTerminado;
+
+    // Reconstrói o tabuleiro visualmente
+    estado.historico.forEach((palavra, linha) => {
+      const palpiteArray = palavra.split("");
+      const resultados = avaliarPalpite(palpiteArray, estado.palavraAlvo);
+      // Põe as letras no sítio
+      atualizarLinhaVisivel(
+        palpiteArray,
+        linha,
+        estado.tamanhoPalavra,
+        -1,
+        "unico",
+      );
+      // Pinta as cores instantaneamente (sem animação de flip)
+      pintarCores(
+        palpiteArray,
+        resultados,
+        linha,
+        estado.tamanhoPalavra,
+        "unico",
+        true,
+      );
+    });
+  } else {
+    // Se não houver save ou for de outro dia, começa um jogo limpo
+    estado.historico = [];
+    estado.linhaAtual = 0;
+    estado.jogoTerminado = false;
+    localStorage.removeItem("termo_unico");
+  }
+
+  // Se o jogo não estiver terminado, ativa o cursor para jogar
+  if (!estado.jogoTerminado) {
+    atualizarInterface();
+  }
 }
 
 function aoClicarCelula(linhaClicada, colunaClicada) {
@@ -54,13 +107,9 @@ function aoClicarCelula(linhaClicada, colunaClicada) {
 export function receberTeclaUnico(tecla) {
   if (estado.jogoTerminado) return;
 
-  if (tecla === "BACK") {
-    lidarComBackspace();
-  } else if (tecla === "ENTER") {
-    lidarComEnter();
-  } else {
-    lidarComLetra(tecla);
-  }
+  if (tecla === "BACK") lidarComBackspace();
+  else if (tecla === "ENTER") lidarComEnter();
+  else lidarComLetra(tecla);
 }
 
 function lidarComBackspace() {
@@ -78,16 +127,12 @@ function lidarComLetra(letra) {
   const proximoVazio = estado.palpiteAtual.findIndex(
     (l, index) => index > estado.cursorAtivo && l === "",
   );
-
-  if (proximoVazio !== -1) {
-    estado.cursorAtivo = proximoVazio;
-  } else {
+  if (proximoVazio !== -1) estado.cursorAtivo = proximoVazio;
+  else {
     const primeiroVazio = estado.palpiteAtual.findIndex((l) => l === "");
-    if (primeiroVazio !== -1) {
-      estado.cursorAtivo = primeiroVazio;
-    } else if (estado.cursorAtivo < estado.tamanhoPalavra - 1) {
+    if (primeiroVazio !== -1) estado.cursorAtivo = primeiroVazio;
+    else if (estado.cursorAtivo < estado.tamanhoPalavra - 1)
       estado.cursorAtivo++;
-    }
   }
   atualizarInterface();
 }
@@ -98,7 +143,6 @@ function lidarComEnter() {
     mostrarMensagem("Atenção: Faltam letras!");
     return;
   }
-
   if (
     !palavraExiste(estado.palpiteAtual, estado.tamanhoPalavra, estado.banco)
   ) {
@@ -106,7 +150,6 @@ function lidarComEnter() {
     mostrarMensagem("Palavra não reconhecida");
     return;
   }
-
   submeterPalpite();
 }
 
@@ -116,6 +159,9 @@ function submeterPalpite() {
     estado.palpiteAtual,
     estado.palavraAlvo,
   );
+
+  // Guarda o histórico
+  estado.historico.push(palpiteString);
 
   pintarCores(
     estado.palpiteAtual,
@@ -127,6 +173,7 @@ function submeterPalpite() {
 
   if (palpiteString === estado.palavraAlvo) {
     estado.jogoTerminado = true;
+    salvarProgresso(); // Grava a vitória na memória
     setTimeout(
       () => animarVitoria(estado.linhaAtual, estado.tamanhoPalavra, "unico"),
       1500,
@@ -137,10 +184,12 @@ function submeterPalpite() {
 
     if (estado.linhaAtual >= estado.maxTentativas) {
       estado.jogoTerminado = true;
+      salvarProgresso(); // Grava a derrota na memória
       setTimeout(() => mostrarMensagem(estado.palavraAlvo), 1500);
     } else {
       estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
       estado.cursorAtivo = 0;
+      salvarProgresso(); // Grava as tentativas feitas
       atualizarInterface();
     }
   }

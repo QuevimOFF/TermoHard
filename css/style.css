@@ -21,7 +21,6 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpMICfahg1CPWWY5t6lFN9oFF5nXSnd5YAsw5bFimtkQ&s=10");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -36,6 +35,22 @@ header {
   font-size: 1.5rem;
   font-weight: bold;
   letter-spacing: 2px;
+  gap: 30px;
+}
+
+#seletor-modo {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 2px solid var(--border-color);
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+}
+#seletor-modo:hover {
+  border-color: var(--color-present);
 }
 
 #board-container {
@@ -45,15 +60,46 @@ header {
   align-items: center;
   padding: 10px;
   background: rgba(18, 18, 19, 0.6);
+  overflow-y: auto;
+}
+
+/* ================= LAYOUTS ================= */
+.layout-unico {
+  display: flex !important;
+}
+
+.layout-dueto {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  max-width: 800px;
+}
+
+.layout-quarteto {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  max-width: 700px;
+}
+
+.layout-quarteto .cell {
+  font-size: 1.5rem;
+  height: 45px;
 }
 
 .board {
   display: grid;
-  grid-template-rows: repeat(6, 1fr);
+  grid-template-rows: repeat(auto-fit, minmax(40px, 1fr));
   gap: 5px;
   width: 100%;
   max-width: 350px;
   aspect-ratio: 5 / 6;
+}
+
+.board.vencido {
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 1s ease;
 }
 
 .cell {
@@ -65,18 +111,16 @@ header {
   font-weight: bold;
   text-transform: uppercase;
   transition: border-color 0.2s ease;
-  cursor: pointer; /* Mãozinha ao passar o rato */
+  cursor: pointer;
 }
 
 .cell.filled {
   border-color: #565758;
 }
-
 .cell.ativa {
-  border-bottom: 5px solid #ffffff; /* Linha de cursor estilo Termo */
+  border-bottom: 5px solid #ffffff;
   transform: scale(1.05);
 }
-
 .cell.correct {
   background-color: var(--color-correct);
   border-color: var(--color-correct);
@@ -118,7 +162,6 @@ header {
   text-transform: uppercase;
   transition: background-color 0.2s;
 }
-
 .key.wide {
   flex: 1.5;
   font-size: 0.8rem;
@@ -131,6 +174,39 @@ header {
 }
 .key.absent {
   background-color: var(--color-absent);
+}
+
+/* ================= ADAPTAÇÃO MOBILE ================= */
+@media (max-width: 768px) {
+  .layout-dueto,
+  .layout-quarteto {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px;
+    padding: 5px;
+  }
+  .layout-quarteto .cell,
+  .layout-dueto .cell {
+    font-size: 1.2rem;
+    height: 40px;
+  }
+  #board-container {
+    padding-bottom: 220px;
+    align-content: start;
+  }
+  #keyboard-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--bg-color);
+    padding: 10px 5px 20px 5px;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+  }
+  .key {
+    height: 50px;
+    font-size: 0.9rem;
+  }
 }
 
 /* ================= ANIMAÇÕES ================= */
@@ -149,7 +225,6 @@ header {
     transform: scale(1);
   }
 }
-
 .cell.flip {
   animation: flip 0.6s ease-in-out forwards;
 }
@@ -164,7 +239,6 @@ header {
     transform: rotateX(0);
   }
 }
-
 .cell.shake {
   animation: shake 0.6s;
 }
@@ -187,7 +261,6 @@ header {
     transform: translateX(6px);
   }
 }
-
 .cell.bounce {
   animation: bounce 1s ease-in-out;
 }
@@ -211,7 +284,7 @@ header {
   }
 }
 
-/* ================= TOAST NOTIFICATIONS ================= */
+/* ================= TOASTS ================= */
 .toast-container {
   position: fixed;
   top: 10%;
@@ -223,7 +296,6 @@ header {
   z-index: 1000;
   pointer-events: none;
 }
-
 .toast {
   background-color: var(--text-color);
   color: var(--bg-color);
@@ -235,16 +307,12 @@ header {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
   animation: fadeInOut 3s forwards;
 }
-
 @keyframes fadeInOut {
   0% {
     opacity: 0;
     transform: translateY(-20px);
   }
-  10% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  10%,
   90% {
     opacity: 1;
     transform: translateY(0);
@@ -252,105 +320,5 @@ header {
   100% {
     opacity: 0;
     transform: translateY(-20px);
-  }
-}
-
-/* ================= MENU DE MODOS ================= */
-header {
-  gap: 30px; /* Dá espaço entre o título e o menu */
-}
-
-#seletor-modo {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  border: 2px solid var(--border-color);
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  outline: none;
-}
-
-#seletor-modo:hover {
-  border-color: var(--color-present); /* Fica amarelo ao passar o rato */
-}
-
-/* ================= LAYOUTS MULTIPLOS (DUETO, QUARTETO...) ================= */
-/* Quando for 1 tabuleiro */
-.layout-unico {
-  display: flex !important;
-}
-
-/* Quando forem 2 tabuleiros */
-.layout-dueto {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(260px, 350px));
-  justify-content: center;
-  align-items: center;
-  gap: 30px;
-  width: 100%;
-  max-width: 760px;
-  margin: 0 auto;
-}
-
-.layout-quarteto {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(260px, 350px));
-  justify-content: center;
-  align-items: center;
-  gap: 20px 30px;
-  width: 100%;
-  max-width: 760px;
-  margin: 0 auto;
-}
-
-/* Tabuleiros que o jogador já acertou a palavra */
-.board.vencido {
-  opacity: 0.4;
-  pointer-events: none; /* Desativa cliques neste tabuleiro */
-  transition: opacity 1s ease;
-}
-
-/* ================= ADAPTAÇÃO PARA TELEMÓVEIS (MOBILE) ================= */
-@media (max-width: 768px) {
-  /* 1. Mantém os tabuleiros em 2 colunas no Dueto e Quarteto, mas encolhe-os um pouco para caberem lado a lado */
-  .layout-dueto,
-  .layout-quarteto {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px;
-    padding: 5px;
-  }
-
-  .layout-quarteto .cell,
-  .layout-dueto .cell {
-    font-size: 1.2rem;
-    height: 40px; /* Células um pouco mais baixinhas no telemóvel */
-  }
-
-  /* 2. Dá um espaço extra no fundo para os tabuleiros não ficarem escondidos atrás do teclado */
-  #board-container {
-    padding-bottom: 220px;
-    align-content: start;
-  }
-
-  /* 3. Prega o teclado firmemente no fundo do ecrã! */
-  #keyboard-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: var(
-      --bg-color
-    ); /* Fundo sólido para tapar os quadrados que passam por trás */
-    padding: 10px 5px 20px 5px; /* Espaço extra para os polegares */
-    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5); /* Sombra elegante no topo do teclado */
-    z-index: 100; /* Garante que o teclado fica sempre por cima de tudo */
-  }
-
-  /* Ajusta o tamanho das teclas para polegares */
-  .key {
-    height: 50px;
-    font-size: 0.9rem;
   }
 }

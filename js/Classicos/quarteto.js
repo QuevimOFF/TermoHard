@@ -2,6 +2,7 @@ import {
   avaliarPalpite,
   palavraExiste,
   sortearPalavrasDoDia,
+  obterDiaAtual,
 } from "../regras.js";
 import {
   criarGrelha,
@@ -16,29 +17,35 @@ const estado = {
   banco: {},
   palavrasAlvo: [],
   statusBoards: [],
+  historico: [],
   palpiteAtual: [],
   linhaAtual: 0,
   cursorAtivo: 0,
   tamanhoPalavra: 5,
-  maxTentativas: 9, // O Quarteto dá 9 tentativas
-  qtdBoards: 4, // São 4 tabuleiros simultâneos
+  maxTentativas: 9,
+  qtdBoards: 4,
   jogoTerminado: false,
 };
+
+function salvarProgresso() {
+  const save = {
+    dia: obterDiaAtual(),
+    historico: estado.historico,
+    linhaAtual: estado.linhaAtual,
+    jogoTerminado: estado.jogoTerminado,
+    statusBoards: estado.statusBoards,
+  };
+  localStorage.setItem("termo_quarteto", JSON.stringify(save));
+}
 
 export function iniciarModoQuarteto(bancoDePalavras) {
   estado.banco = bancoDePalavras;
   const palavras5 = bancoDePalavras["5"];
 
-  // Sorteia as 4 palavras com base no dia atual
-  estado.palavrasAlvo = sortearPalavrasDoDia(palavras5, estado.qtdBoards);
-  estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
-
-  console.log("Modo Quarteto - Alvos:", estado.palavrasAlvo);
+  estado.palavrasAlvo = sortearPalavrasDoDia(palavras5, estado.qtdBoards, 2000);
 
   estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
-  estado.linhaAtual = 0;
   estado.cursorAtivo = 0;
-  estado.jogoTerminado = false;
 
   document.getElementById("board-container").innerHTML = "";
   for (let i = 0; i < estado.qtdBoards; i++) {
@@ -51,7 +58,52 @@ export function iniciarModoQuarteto(bancoDePalavras) {
     );
   }
 
-  atualizarInterface();
+  const save = JSON.parse(localStorage.getItem("termo_quarteto"));
+  const diaHoje = obterDiaAtual();
+
+  if (save && save.dia === diaHoje) {
+    estado.historico = save.historico || [];
+    estado.linhaAtual = save.linhaAtual;
+    estado.jogoTerminado = save.jogoTerminado;
+    estado.statusBoards =
+      save.statusBoards || Array(estado.qtdBoards).fill("jogando");
+
+    estado.historico.forEach((palavra, linha) => {
+      const palpiteArray = palavra.split("");
+      for (let i = 0; i < estado.qtdBoards; i++) {
+        const resultados = avaliarPalpite(palpiteArray, estado.palavrasAlvo[i]);
+        atualizarLinhaVisivel(
+          palpiteArray,
+          linha,
+          estado.tamanhoPalavra,
+          -1,
+          `board-${i}`,
+        );
+        pintarCores(
+          palpiteArray,
+          resultados,
+          linha,
+          estado.tamanhoPalavra,
+          `board-${i}`,
+          true,
+        );
+      }
+    });
+
+    for (let i = 0; i < estado.qtdBoards; i++) {
+      if (estado.statusBoards[i] === "venceu") {
+        document.getElementById(`board-${i}`).classList.add("vencido");
+      }
+    }
+  } else {
+    estado.historico = [];
+    estado.linhaAtual = 0;
+    estado.jogoTerminado = false;
+    estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
+    localStorage.removeItem("termo_quarteto");
+  }
+
+  if (!estado.jogoTerminado) atualizarInterface();
 }
 
 function aoClicarCelula(linhaClicada, colunaClicada, boardIndex) {
@@ -87,10 +139,8 @@ function lidarComLetra(letra) {
   const proximoVazio = estado.palpiteAtual.findIndex(
     (l, i) => i > estado.cursorAtivo && l === "",
   );
-
-  if (proximoVazio !== -1) {
-    estado.cursorAtivo = proximoVazio;
-  } else {
+  if (proximoVazio !== -1) estado.cursorAtivo = proximoVazio;
+  else {
     const primeiroVazio = estado.palpiteAtual.findIndex((l) => l === "");
     if (primeiroVazio !== -1) estado.cursorAtivo = primeiroVazio;
     else if (estado.cursorAtivo < estado.tamanhoPalavra - 1)
@@ -117,11 +167,11 @@ function lidarComEnter() {
 
 function submeterPalpite() {
   const palpiteString = estado.palpiteAtual.join("");
+  estado.historico.push(palpiteString);
   let todosVencidos = true;
 
   for (let i = 0; i < estado.qtdBoards; i++) {
     if (estado.statusBoards[i] !== "jogando") continue;
-
     const alvo = estado.palavrasAlvo[i];
     const resultadosCores = avaliarPalpite(estado.palpiteAtual, alvo);
 
@@ -153,11 +203,13 @@ function submeterPalpite() {
     estado.statusBoards.every((status) => status === "venceu")
   ) {
     estado.jogoTerminado = true;
+    salvarProgresso();
     setTimeout(() => mostrarMensagem("Brilhante! Venceu o Quarteto!"), 3000);
   } else {
     estado.linhaAtual++;
     if (estado.linhaAtual >= estado.maxTentativas) {
       estado.jogoTerminado = true;
+      salvarProgresso();
       setTimeout(
         () =>
           mostrarMensagem(
@@ -168,6 +220,7 @@ function submeterPalpite() {
     } else {
       estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
       estado.cursorAtivo = 0;
+      salvarProgresso();
       atualizarInterface();
     }
   }

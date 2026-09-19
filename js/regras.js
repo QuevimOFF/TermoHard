@@ -37,8 +37,13 @@ export function avaliarPalpite(palpite, alvo) {
   return resultados;
 }
 
+// NOVA FUNÇÃO: Devolve o número exato do dia (Fuso de Brasília)
+export function obterDiaAtual() {
+  return Math.floor((Date.now() - 10800000) / 86400000);
+}
+
 export function sortearPalavrasDoDia(listaDePalavras, quantidadeDePalavras) {
-  const diasPassados = Math.floor((Date.now() - 10800000) / 86400000);
+  const diasPassados = obterDiaAtual(); // Usa a nossa nova função
   const palavrasEscolhidas = [];
 
   for (let i = 0; i < quantidadeDePalavras; i++) {

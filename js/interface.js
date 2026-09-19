@@ -4,14 +4,9 @@ export function criarGrelha(
   tamanhoPalavra,
   boardId = "board-0",
   aoClicarCelula,
-  limparContainer = false,
 ) {
   const container = document.getElementById(containerId);
   if (!container) return;
-
-  if (limparContainer) {
-    container.innerHTML = "";
-  }
 
   const board = document.createElement("div");
   board.className = "board";
@@ -31,6 +26,7 @@ export function criarGrelha(
       board.appendChild(cell);
     }
   }
+
   container.appendChild(board);
 }
 
@@ -73,6 +69,7 @@ export function pintarCores(
   linhaAtual,
   tamanhoPalavra,
   boardId = "board-0",
+  imediato = false,
 ) {
   for (let col = 0; col < tamanhoPalavra; col++) {
     const cell = document.getElementById(
@@ -80,11 +77,10 @@ export function pintarCores(
     );
     const keyBtn = document.getElementById(`key-${palpiteArray[col]}`);
 
-    setTimeout(() => {
-      if (cell) {
-        cell.classList.add("flip");
-        cell.classList.add(resultados[col]);
-      }
+    const aplicarEfeito = () => {
+      if (!cell) return;
+      if (!imediato) cell.classList.add("flip");
+      cell.classList.add(resultados[col]);
 
       if (!keyBtn) return;
 
@@ -100,7 +96,13 @@ export function pintarCores(
       ) {
         keyBtn.classList.add("absent");
       }
-    }, col * 250);
+    };
+
+    if (imediato) {
+      aplicarEfeito();
+    } else {
+      setTimeout(aplicarEfeito, col * 250);
+    }
   }
 }
 
@@ -129,6 +131,8 @@ export function animarVitoria(linhaAtual, tamanhoPalavra, boardId = "board-0") {
 
 export function criarTeclado(containerId, funcaoDeClique) {
   const container = document.getElementById(containerId);
+  if (!container) return;
+
   container.innerHTML = "";
   const linhas = [
     ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
@@ -164,7 +168,6 @@ export function mostrarMensagem(texto) {
   const toast = document.createElement("div");
   toast.className = "toast";
   toast.textContent = texto;
-
   container.appendChild(toast);
 
   setTimeout(() => {
