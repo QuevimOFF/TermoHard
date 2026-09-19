@@ -2,6 +2,7 @@ import {
   avaliarPalpite,
   palavraExiste,
   sortearPalavrasDoDia,
+  obterDiaAtual,
 } from "../regras.js";
 import {
   criarGrelha,
@@ -16,6 +17,7 @@ const estado = {
   banco: {},
   palavrasAlvo: [],
   statusBoards: [],
+  historico: [],
   palpiteAtual: [],
   linhaAtual: 0,
   cursorAtivo: 0,
@@ -24,6 +26,17 @@ const estado = {
   qtdBoards: 2,
   jogoTerminado: false,
 };
+
+function salvarProgresso() {
+  const save = {
+    dia: obterDiaAtual(),
+    historico: estado.historico,
+    linhaAtual: estado.linhaAtual,
+    jogoTerminado: estado.jogoTerminado,
+    statusBoards: estado.statusBoards,
+  };
+  localStorage.setItem("termo_dueto", JSON.stringify(save));
+}
 
 export function iniciarModoDueto(bancoDePalavras) {
   estado.banco = bancoDePalavras;
@@ -38,6 +51,8 @@ export function iniciarModoDueto(bancoDePalavras) {
   estado.linhaAtual = 0;
   estado.cursorAtivo = 0;
   estado.jogoTerminado = false;
+  estado.historico = [];
+  estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
 
   document.getElementById("board-container").innerHTML = "";
   for (let i = 0; i < estado.qtdBoards; i++) {
@@ -50,7 +65,48 @@ export function iniciarModoDueto(bancoDePalavras) {
     );
   }
 
-  atualizarInterface();
+  const save = JSON.parse(localStorage.getItem("termo_dueto"));
+  const diaHoje = obterDiaAtual();
+
+  if (save && save.dia === diaHoje) {
+    estado.historico = save.historico || [];
+    estado.linhaAtual = save.linhaAtual || 0;
+    estado.jogoTerminado = save.jogoTerminado || false;
+    estado.statusBoards =
+      save.statusBoards || Array(estado.qtdBoards).fill("jogando");
+
+    estado.historico.forEach((palavra, linha) => {
+      const palpiteArray = palavra.split("");
+      for (let i = 0; i < estado.qtdBoards; i++) {
+        const resultados = avaliarPalpite(palpiteArray, estado.palavrasAlvo[i]);
+        atualizarLinhaVisivel(
+          palpiteArray,
+          linha,
+          estado.tamanhoPalavra,
+          -1,
+          `board-${i}`,
+        );
+        pintarCores(
+          palpiteArray,
+          resultados,
+          linha,
+          estado.tamanhoPalavra,
+          `board-${i}`,
+          true,
+        );
+      }
+    });
+
+    for (let i = 0; i < estado.qtdBoards; i++) {
+      if (estado.statusBoards[i] === "venceu") {
+        document.getElementById(`board-${i}`).classList.add("vencido");
+      }
+    }
+  } else {
+    localStorage.removeItem("termo_dueto");
+  }
+
+  if (!estado.jogoTerminado) atualizarInterface();
 }
 
 function aoClicarCelula(linhaClicada, colunaClicada, boardIndex) {
@@ -117,6 +173,7 @@ function lidarComEnter() {
 
 function submeterPalpite() {
   const palpiteString = estado.palpiteAtual.join("");
+  estado.historico.push(palpiteString);
   let todosVencidos = true;
 
   for (let i = 0; i < estado.qtdBoards; i++) {
@@ -153,11 +210,13 @@ function submeterPalpite() {
     estado.statusBoards.every((status) => status === "venceu")
   ) {
     estado.jogoTerminado = true;
+    salvarProgresso();
     setTimeout(() => mostrarMensagem("Incrível! Venceu o Dueto!"), 3000);
   } else {
     estado.linhaAtual++;
     if (estado.linhaAtual >= estado.maxTentativas) {
       estado.jogoTerminado = true;
+      salvarProgresso();
       setTimeout(
         () =>
           mostrarMensagem(
@@ -168,6 +227,7 @@ function submeterPalpite() {
     } else {
       estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
       estado.cursorAtivo = 0;
+      salvarProgresso();
       atualizarInterface();
     }
   }
