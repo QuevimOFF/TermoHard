@@ -38,16 +38,23 @@ function salvarProgresso() {
   localStorage.setItem("termo_quarteto", JSON.stringify(save));
 }
 
-export function iniciarModoQuarteto(bancoDePalavras) {
+export function iniciarModoQuarteto(bancoDePalavras, listaSolucoes) {
   estado.banco = bancoDePalavras;
-  const palavras5 = bancoDePalavras["5"];
-
-  estado.palavrasAlvo = sortearPalavrasDoDia(palavras5, estado.qtdBoards, 2000);
-
+  estado.palavrasAlvo = sortearPalavrasDoDia(
+    listaSolucoes,
+    estado.qtdBoards,
+    20,
+  );
   estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
   estado.cursorAtivo = 0;
+  estado.historico = [];
+  estado.linhaAtual = 0;
+  estado.jogoTerminado = false;
+  estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
 
-  document.getElementById("board-container").innerHTML = "";
+  const container = document.getElementById("board-container");
+  if (container) container.innerHTML = "";
+
   for (let i = 0; i < estado.qtdBoards; i++) {
     criarGrelha(
       "board-container",
@@ -64,14 +71,18 @@ export function iniciarModoQuarteto(bancoDePalavras) {
   } catch {
     localStorage.removeItem("termo_quarteto");
   }
+
   const diaHoje = obterDiaAtual();
 
   if (save && save.dia === diaHoje) {
     estado.historico = save.historico || [];
-    estado.linhaAtual = save.linhaAtual;
-    estado.jogoTerminado = save.jogoTerminado;
+    estado.linhaAtual = save.linhaAtual ?? 0;
+    estado.jogoTerminado = Boolean(save.jogoTerminado);
     estado.statusBoards =
-      save.statusBoards || Array(estado.qtdBoards).fill("jogando");
+      Array.isArray(save.statusBoards) &&
+      save.statusBoards.length === estado.qtdBoards
+        ? save.statusBoards
+        : Array(estado.qtdBoards).fill("jogando");
 
     estado.historico.forEach((palavra, linha) => {
       const palpiteArray = palavra.split("");
@@ -97,7 +108,8 @@ export function iniciarModoQuarteto(bancoDePalavras) {
 
     for (let i = 0; i < estado.qtdBoards; i++) {
       if (estado.statusBoards[i] === "venceu") {
-        document.getElementById(`board-${i}`).classList.add("vencido");
+        const board = document.getElementById(`board-${i}`);
+        if (board) board.classList.add("vencido");
       }
     }
   } else {

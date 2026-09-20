@@ -4,9 +4,10 @@ import { iniciarModoDueto, receberTeclaDueto } from "./Classicos/dueto.js";
 import {
   iniciarModoQuarteto,
   receberTeclaQuarteto,
-} from "./Classicos/quarteto.js"; // Importámos o Quarteto!
+} from "./Classicos/quarteto.js";
 
 let bancoDePalavras = {};
+let listaSolucoes = [];
 let modoAtual = "unico";
 
 async function arrancarJogo() {
@@ -39,24 +40,38 @@ function iniciarModoSelecionado() {
     container.className = `layout-${modoAtual}`;
   }
 
-  if (modoAtual === "unico") iniciarModoUnico(bancoDePalavras);
-  else if (modoAtual === "dueto") iniciarModoDueto(bancoDePalavras);
-  else if (modoAtual === "quarteto") iniciarModoQuarteto(bancoDePalavras);
+  if (modoAtual === "unico") iniciarModoUnico(bancoDePalavras, listaSolucoes);
+  else if (modoAtual === "dueto")
+    iniciarModoDueto(bancoDePalavras, listaSolucoes);
+  else if (modoAtual === "quarteto")
+    iniciarModoQuarteto(bancoDePalavras, listaSolucoes);
 }
 
 async function carregarJSON() {
   try {
-    const resposta = await fetch("./js/palavras5.json");
-    if (!resposta.ok) throw new Error("Erro na rede ao carregar JSON");
-    const dados = await resposta.json();
-    const listaPalavras = Array.isArray(dados) ? dados : dados["5"];
+    const [resValidas, resSolucoes] = await Promise.all([
+      fetch("./js/palavras5.json"),
+      fetch("./js/soluções.json"),
+    ]);
+
+    if (!resValidas.ok || !resSolucoes.ok)
+      throw new Error("Erro na rede ao carregar JSON");
+
+    const dadosValidas = await resValidas.json();
+    const dadosSolucoes = await resSolucoes.json();
+
+    const listaPalavras = Array.isArray(dadosValidas)
+      ? dadosValidas
+      : dadosValidas["5"];
     if (!Array.isArray(listaPalavras) || listaPalavras.length === 0) {
       throw new Error("O dicionário não contém palavras de cinco letras");
     }
-    bancoDePalavras = { ...dados, 5: listaPalavras };
+
+    bancoDePalavras = { ...dadosValidas, 5: listaPalavras };
+    listaSolucoes = dadosSolucoes;
     return true;
   } catch (erro) {
-    console.error("Erro fatal ao carregar palavras5.json:", erro);
+    console.error("Erro fatal ao carregar JSON:", erro);
     return false;
   }
 }
@@ -76,19 +91,15 @@ function escutarTecladoFisico() {
   });
 }
 
-// js/main.js
-
 function iniciarContadorDiario() {
   const elementoContador = document.getElementById("contador-diario");
   if (!elementoContador) return;
 
   function atualizarContador() {
     const agora = new Date();
-    // Converte o tempo do utilizador para UTC, depois aplica UTC-3 (Brasília)
     const utc = agora.getTime() + agora.getTimezoneOffset() * 60000;
     const dataBrasilia = new Date(utc - 3600000 * 3);
 
-    // Define a próxima meia-noite em Brasília
     const proximaMeiaNoite = new Date(dataBrasilia);
     proximaMeiaNoite.setHours(24, 0, 0, 0);
 
@@ -104,7 +115,7 @@ function iniciarContadorDiario() {
       .toString()
       .padStart(2, "0");
 
-    elementoContador.textContent = `Próximas palavras em: ${horas}:${minutos}:${segundos}`;
+    elementoContador.textContent = `${horas}:${minutos}:${segundos}`;
   }
 
   atualizarContador();

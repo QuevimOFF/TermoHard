@@ -36,13 +36,17 @@ function salvarProgresso() {
   localStorage.setItem("termo_unico", JSON.stringify(save));
 }
 
-export function iniciarModoUnico(bancoDePalavras) {
+export function iniciarModoUnico(bancoDePalavras, listaSolucoes) {
   estado.banco = bancoDePalavras;
-  const palavras5 = bancoDePalavras["5"];
-  estado.palavraAlvo = sortearPalavrasDoDia(palavras5, 1)[0];
-
+  estado.palavraAlvo = sortearPalavrasDoDia(listaSolucoes, 1, 0)[0];
   estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
   estado.cursorAtivo = 0;
+  estado.historico = [];
+  estado.linhaAtual = 0;
+  estado.jogoTerminado = false;
+
+  const container = document.getElementById("board-container");
+  if (container) container.innerHTML = "";
 
   criarGrelha(
     "board-container",
@@ -52,26 +56,23 @@ export function iniciarModoUnico(bancoDePalavras) {
     aoClicarCelula,
   );
 
-  // TENTA CARREGAR O SAVE DA MEMÓRIA
   let save = null;
   try {
     save = JSON.parse(localStorage.getItem("termo_unico"));
   } catch {
     localStorage.removeItem("termo_unico");
   }
+
   const diaHoje = obterDiaAtual();
 
   if (save && save.dia === diaHoje) {
-    // Restaura as variáveis
     estado.historico = save.historico || [];
-    estado.linhaAtual = save.linhaAtual;
-    estado.jogoTerminado = save.jogoTerminado;
+    estado.linhaAtual = save.linhaAtual ?? 0;
+    estado.jogoTerminado = Boolean(save.jogoTerminado);
 
-    // Reconstrói o tabuleiro visualmente
     estado.historico.forEach((palavra, linha) => {
       const palpiteArray = palavra.split("");
       const resultados = avaliarPalpite(palpiteArray, estado.palavraAlvo);
-      // Põe as letras no sítio
       atualizarLinhaVisivel(
         palpiteArray,
         linha,
@@ -79,7 +80,6 @@ export function iniciarModoUnico(bancoDePalavras) {
         -1,
         "unico",
       );
-      // Pinta as cores instantaneamente (sem animação de flip)
       pintarCores(
         palpiteArray,
         resultados,
@@ -90,14 +90,12 @@ export function iniciarModoUnico(bancoDePalavras) {
       );
     });
   } else {
-    // Se não houver save ou for de outro dia, começa um jogo limpo
     estado.historico = [];
     estado.linhaAtual = 0;
     estado.jogoTerminado = false;
     localStorage.removeItem("termo_unico");
   }
 
-  // Se o jogo não estiver terminado, ativa o cursor para jogar
   if (!estado.jogoTerminado) {
     atualizarInterface();
   }

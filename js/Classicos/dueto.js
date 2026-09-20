@@ -38,21 +38,23 @@ function salvarProgresso() {
   localStorage.setItem("termo_dueto", JSON.stringify(save));
 }
 
-export function iniciarModoDueto(bancoDePalavras) {
+export function iniciarModoDueto(bancoDePalavras, listaSolucoes) {
   estado.banco = bancoDePalavras;
-  const palavras5 = bancoDePalavras["5"];
-
-  estado.palavrasAlvo = sortearPalavrasDoDia(palavras5, estado.qtdBoards);
+  estado.palavrasAlvo = sortearPalavrasDoDia(
+    listaSolucoes,
+    estado.qtdBoards,
+    10,
+  );
   estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
-
   estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
   estado.linhaAtual = 0;
   estado.cursorAtivo = 0;
   estado.jogoTerminado = false;
   estado.historico = [];
-  estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
 
-  document.getElementById("board-container").innerHTML = "";
+  const container = document.getElementById("board-container");
+  if (container) container.innerHTML = "";
+
   for (let i = 0; i < estado.qtdBoards; i++) {
     criarGrelha(
       "board-container",
@@ -69,14 +71,18 @@ export function iniciarModoDueto(bancoDePalavras) {
   } catch {
     localStorage.removeItem("termo_dueto");
   }
+
   const diaHoje = obterDiaAtual();
 
   if (save && save.dia === diaHoje) {
     estado.historico = save.historico || [];
-    estado.linhaAtual = save.linhaAtual || 0;
-    estado.jogoTerminado = save.jogoTerminado || false;
+    estado.linhaAtual = save.linhaAtual ?? 0;
+    estado.jogoTerminado = Boolean(save.jogoTerminado);
     estado.statusBoards =
-      save.statusBoards || Array(estado.qtdBoards).fill("jogando");
+      Array.isArray(save.statusBoards) &&
+      save.statusBoards.length === estado.qtdBoards
+        ? save.statusBoards
+        : Array(estado.qtdBoards).fill("jogando");
 
     estado.historico.forEach((palavra, linha) => {
       const palpiteArray = palavra.split("");
@@ -102,10 +108,15 @@ export function iniciarModoDueto(bancoDePalavras) {
 
     for (let i = 0; i < estado.qtdBoards; i++) {
       if (estado.statusBoards[i] === "venceu") {
-        document.getElementById(`board-${i}`).classList.add("vencido");
+        const board = document.getElementById(`board-${i}`);
+        if (board) board.classList.add("vencido");
       }
     }
   } else {
+    estado.historico = [];
+    estado.linhaAtual = 0;
+    estado.jogoTerminado = false;
+    estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
     localStorage.removeItem("termo_dueto");
   }
 
