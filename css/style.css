@@ -214,7 +214,13 @@ header {
   .layout-quarteto .cell,
   .layout-dueto .cell {
     font-size: 1.2rem;
-    height: 40px;
+    height: auto;
+    min-height: 0;
+  }
+  .layout-dueto .board,
+  .layout-quarteto .board {
+    min-height: 0;
+    grid-auto-rows: minmax(0, 1fr);
   }
   #board-container {
     padding-bottom: 220px;
