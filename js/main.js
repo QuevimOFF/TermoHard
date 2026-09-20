@@ -1,4 +1,4 @@
-import { criarTeclado } from "./interface.js";
+import { criarTeclado, mostrarMensagem } from "./interface.js";
 import { iniciarModoUnico, receberTeclaUnico } from "./Classicos/unico.js";
 import { iniciarModoDueto, receberTeclaDueto } from "./Classicos/dueto.js";
 import {
@@ -10,7 +10,12 @@ let bancoDePalavras = {};
 let modoAtual = "unico";
 
 async function arrancarJogo() {
-  await carregarJSON();
+  const carregouDicionario = await carregarJSON();
+  if (!carregouDicionario) {
+    mostrarMensagem("Não foi possível carregar o dicionário.");
+    return;
+  }
+  iniciarContadorDiario();
   configurarMenu();
   iniciarModoSelecionado();
   escutarTecladoFisico();
@@ -41,11 +46,18 @@ function iniciarModoSelecionado() {
 
 async function carregarJSON() {
   try {
-    const resposta = await fetch("./js/palavras.json");
+    const resposta = await fetch("./js/palavras5.json");
     if (!resposta.ok) throw new Error("Erro na rede ao carregar JSON");
-    bancoDePalavras = await resposta.json();
+    const dados = await resposta.json();
+    const listaPalavras = Array.isArray(dados) ? dados : dados["5"];
+    if (!Array.isArray(listaPalavras) || listaPalavras.length === 0) {
+      throw new Error("O dicionário não contém palavras de cinco letras");
+    }
+    bancoDePalavras = { ...dados, 5: listaPalavras };
+    return true;
   } catch (erro) {
-    console.error("Erro fatal ao carregar palavras.json:", erro);
+    console.error("Erro fatal ao carregar palavras5.json:", erro);
+    return false;
   }
 }
 
@@ -62,6 +74,41 @@ function escutarTecladoFisico() {
     else if (tecla === "BACKSPACE") processarInputGeral("BACK");
     else if (/^[A-Z]$/.test(tecla)) processarInputGeral(tecla);
   });
+}
+
+// js/main.js
+
+function iniciarContadorDiario() {
+  const elementoContador = document.getElementById("contador-diario");
+  if (!elementoContador) return;
+
+  function atualizarContador() {
+    const agora = new Date();
+    // Converte o tempo do utilizador para UTC, depois aplica UTC-3 (Brasília)
+    const utc = agora.getTime() + agora.getTimezoneOffset() * 60000;
+    const dataBrasilia = new Date(utc - 3600000 * 3);
+
+    // Define a próxima meia-noite em Brasília
+    const proximaMeiaNoite = new Date(dataBrasilia);
+    proximaMeiaNoite.setHours(24, 0, 0, 0);
+
+    const diferenca = proximaMeiaNoite - dataBrasilia;
+
+    const horas = Math.floor((diferenca / (1000 * 60 * 60)) % 24)
+      .toString()
+      .padStart(2, "0");
+    const minutos = Math.floor((diferenca / 1000 / 60) % 60)
+      .toString()
+      .padStart(2, "0");
+    const segundos = Math.floor((diferenca / 1000) % 60)
+      .toString()
+      .padStart(2, "0");
+
+    elementoContador.textContent = `Próximas palavras em: ${horas}:${minutos}:${segundos}`;
+  }
+
+  atualizarContador();
+  setInterval(atualizarContador, 1000);
 }
 
 arrancarJogo();

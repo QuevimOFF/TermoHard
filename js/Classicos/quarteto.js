@@ -58,7 +58,12 @@ export function iniciarModoQuarteto(bancoDePalavras) {
     );
   }
 
-  const save = JSON.parse(localStorage.getItem("termo_quarteto"));
+  let save = null;
+  try {
+    save = JSON.parse(localStorage.getItem("termo_quarteto"));
+  } catch {
+    localStorage.removeItem("termo_quarteto");
+  }
   const diaHoje = obterDiaAtual();
 
   if (save && save.dia === diaHoje) {

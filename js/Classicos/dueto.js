@@ -45,8 +45,6 @@ export function iniciarModoDueto(bancoDePalavras) {
   estado.palavrasAlvo = sortearPalavrasDoDia(palavras5, estado.qtdBoards);
   estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
 
-  console.log("Modo Dueto - Alvos:", estado.palavrasAlvo);
-
   estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
   estado.linhaAtual = 0;
   estado.cursorAtivo = 0;
@@ -65,7 +63,12 @@ export function iniciarModoDueto(bancoDePalavras) {
     );
   }
 
-  const save = JSON.parse(localStorage.getItem("termo_dueto"));
+  let save = null;
+  try {
+    save = JSON.parse(localStorage.getItem("termo_dueto"));
+  } catch {
+    localStorage.removeItem("termo_dueto");
+  }
   const diaHoje = obterDiaAtual();
 
   if (save && save.dia === diaHoje) {

@@ -42,14 +42,31 @@ export function obterDiaAtual() {
   return Math.floor((Date.now() - 10800000) / 86400000);
 }
 
-export function sortearPalavrasDoDia(listaDePalavras, quantidadeDePalavras) {
-  const diasPassados = obterDiaAtual(); // Usa a nossa nova função
-  const palavrasEscolhidas = [];
+// js/regras.js
 
-  for (let i = 0; i < quantidadeDePalavras; i++) {
-    const indice = (diasPassados + i) % listaDePalavras.length;
-    palavrasEscolhidas.push(listaDePalavras[indice].toUpperCase());
+// LCG (Linear Congruential Generator) para gerar números pseudo-aleatórios baseados numa semente
+function randomComSemente(semente) {
+  return function () {
+    semente = (semente * 9301 + 49297) % 233280;
+    return semente / 233280;
+  };
+}
+
+export function sortearPalavrasDoDia(lista, qtd, offsetIndice = 0) {
+  if (!Array.isArray(lista) || lista.length === 0 || qtd <= 0) return [];
+
+  const diaAtual = obterDiaAtual();
+  const rng = randomComSemente(diaAtual + 99999);
+  const indices = Array.from({ length: lista.length }, (_, i) => i);
+
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
   }
 
-  return palavrasEscolhidas;
+  const inicio =
+    ((offsetIndice % indices.length) + indices.length) % indices.length;
+  return Array.from({ length: qtd }, (_, i) =>
+    lista[indices[(inicio + i) % indices.length]].toUpperCase(),
+  );
 }

@@ -53,7 +53,12 @@ export function iniciarModoUnico(bancoDePalavras) {
   );
 
   // TENTA CARREGAR O SAVE DA MEMÓRIA
-  const save = JSON.parse(localStorage.getItem("termo_unico"));
+  let save = null;
+  try {
+    save = JSON.parse(localStorage.getItem("termo_unico"));
+  } catch {
+    localStorage.removeItem("termo_unico");
+  }
   const diaHoje = obterDiaAtual();
 
   if (save && save.dia === diaHoje) {

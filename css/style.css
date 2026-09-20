@@ -355,3 +355,14 @@ header {
     transform: translateY(-20px);
   }
 }
+
+.contador {
+  font-family: monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: #3aaa35; /* Verde Termo */
+  padding: 5px 10px;
+  border-radius: 5px;
+  text-align: center;
+}
