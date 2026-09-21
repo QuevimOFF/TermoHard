@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fundo escuro (a mesma cor do Termo Hard) -->
+  <rect width="512" height="512" rx="112" fill="#121213"/>
+  
+  <!-- Chama Minimalista mais larga (Vermelho, Laranja e Amarelo) -->
+  <path d="M256 72C256 72 132 200 132 312C132 380.5 187.5 436 256 436C324.5 436 380 380.5 380 312C380 200 256 72 256 72Z" fill="#E63946"/>
+  <path d="M256 168C256 168 182 256 182 328C182 368.9 215.1 402 256 402C296.9 402 330 368.9 330 328C330 256 256 168 256 168Z" fill="#F4A261"/>
+  <path d="M256 248C256 248 214 304 214 344C214 367.2 232.8 386 256 386C279.2 386 298 367.2 298 344C298 304 256 248 256 248Z" fill="#E9C46A"/>
+  
+  <!-- As Letras "TH" ajustadas como espaço negativo dentro da chama -->
+  <text x="256" y="380" font-family="Arial, sans-serif" font-weight="900" font-size="125" letter-spacing="-4" fill="#121213" text-anchor="middle">TH</text>
+</svg>
