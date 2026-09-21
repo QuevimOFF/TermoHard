@@ -109,10 +109,25 @@ header span {
   gap: 25px;
 }
 
+.layout-dueto .board {
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  aspect-ratio: 5 / 7;
+}
+
 .layout-quarteto {
-  grid-template-columns: repeat(2, minmax(0, 280px));
+  grid-template-columns: repeat(2, minmax(0, 150px));
   justify-content: center;
   gap: 15px;
+}
+
+#board-container.layout-dueto,
+#board-container.layout-quarteto {
+  overflow-y: hidden;
+}
+
+.layout-quarteto .board {
+  grid-template-rows: repeat(9, minmax(0, 1fr));
+  aspect-ratio: 5 / 9;
 }
 
 .layout-octeto {
@@ -273,6 +288,11 @@ header span {
   .layout-hexateto {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
+  }
+
+  .layout-quarteto {
+    grid-template-columns: repeat(2, minmax(0, 150px));
+    align-content: center;
   }
 
   .layout-unico .cell {

@@ -25,7 +25,7 @@ async function arrancarJogo() {
   configurarMenu();
   iniciarModoSelecionado();
   escutarTecladoFisico();
-  gerirTutorial(); // ADICIONA ESTA LINHA AQUI!
+  gerirTutorial();
 }
 
 function configurarMenu() {
@@ -141,26 +141,21 @@ function gerirTutorial() {
 
   function abrirModal() {
     modal.classList.remove("hidden");
-    // Remove o foco do botão para não ativar ao carregar no Enter acidentalmente
-    btnAbrir.blur();
+    btnAbrir.blur(); // Tira o foco do botão para o jogador não fechar e abrir clicando no ENTER do teclado físico
   }
 
   function fecharModal() {
     modal.classList.add("hidden");
-    // Guarda no navegador que o utilizador já viu o tutorial
     localStorage.setItem("termo_tutorial_lido", "true");
   }
 
-  // Eventos de clique
   btnAbrir.addEventListener("click", abrirModal);
   btnFechar.addEventListener("click", fecharModal);
 
-  // Fecha o modal se o jogador clicar fora da caixa na área escura
   modal.addEventListener("click", (e) => {
     if (e.target === modal) fecharModal();
   });
 
-  // Se o jogador nunca tiver lido o tutorial antes, abre automaticamente
   if (!localStorage.getItem("termo_tutorial_lido")) {
     abrirModal();
   }
