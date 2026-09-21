@@ -120,9 +120,14 @@ header span {
   gap: 15px;
 }
 
-#board-container.layout-dueto,
-#board-container.layout-quarteto {
+#board-container.layout-dueto {
   overflow-y: hidden;
+}
+
+#board-container.layout-quarteto,
+#board-container.layout-octeto,
+#board-container.layout-hexateto {
+  overflow-y: auto;
 }
 
 .layout-quarteto .board {
