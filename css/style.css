@@ -338,7 +338,7 @@ header span {
 
   .layout-octeto,
   .layout-hexateto {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 150px));
     align-content: start;
     overflow-y: auto;
   }
@@ -359,7 +359,7 @@ header span {
 @media (max-width: 768px) {
   #board-container.layout-octeto,
   #board-container.layout-hexateto {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 150px));
   }
 }
 
