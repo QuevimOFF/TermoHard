@@ -44,6 +44,7 @@ function iniciarModoSelecionado() {
   if (container) {
     container.innerHTML = "";
     container.className = `layout-${modoAtual}`;
+    container.scrollTop = 0;
   }
 
   if (modoAtual === "unico") iniciarModoUnico(bancoDePalavras, listaSolucoes);
