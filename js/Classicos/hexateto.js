@@ -104,7 +104,17 @@ export function iniciarModoHexateto(bancoDePalavras, listaSolucoes) {
     estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
     localStorage.removeItem("termo_hexateto");
   }
-  if (!estado.jogoTerminado) atualizarInterface();
+  if (!estado.jogoTerminado) {
+    atualizarInterface();
+  } else {
+    setTimeout(
+      () =>
+        mostrarMensagem(
+          `Palavras do Hexateto: ${estado.palavrasAlvo.join(", ")}`,
+        ),
+      500,
+    );
+  }
 }
 
 function aoClicarCelula(linhaClicada, colunaClicada, boardIndex) {
@@ -200,7 +210,13 @@ function submeterPalpite() {
   if (todosVencidos || estado.statusBoards.every((s) => s === "venceu")) {
     estado.jogoTerminado = true;
     salvarProgresso();
-    setTimeout(() => mostrarMensagem("Absurdo! Venceu o Hexateto!"), 3000);
+    setTimeout(
+      () =>
+        mostrarMensagem(
+          `Absurdo! Venceu o Hexateto! Palavras: ${estado.palavrasAlvo.join(", ")}`,
+        ),
+      3000,
+    );
   } else {
     estado.linhaAtual++;
     if (estado.linhaAtual >= estado.maxTentativas) {

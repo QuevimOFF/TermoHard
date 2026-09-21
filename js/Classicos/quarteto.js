@@ -120,7 +120,17 @@ export function iniciarModoQuarteto(bancoDePalavras, listaSolucoes) {
     localStorage.removeItem("termo_quarteto");
   }
 
-  if (!estado.jogoTerminado) atualizarInterface();
+  if (!estado.jogoTerminado) {
+    atualizarInterface();
+  } else {
+    setTimeout(
+      () =>
+        mostrarMensagem(
+          `Palavras do Quarteto: ${estado.palavrasAlvo.join(", ")}`,
+        ),
+      500,
+    );
+  }
 }
 
 function aoClicarCelula(linhaClicada, colunaClicada, boardIndex) {
@@ -221,7 +231,13 @@ function submeterPalpite() {
   ) {
     estado.jogoTerminado = true;
     salvarProgresso();
-    setTimeout(() => mostrarMensagem("Brilhante! Venceu o Quarteto!"), 3000);
+    setTimeout(
+      () =>
+        mostrarMensagem(
+          `Brilhante! Venceu o Quarteto! Palavras: ${estado.palavrasAlvo.join(", ")}`,
+        ),
+      3000,
+    );
   } else {
     estado.linhaAtual++;
     if (estado.linhaAtual >= estado.maxTentativas) {

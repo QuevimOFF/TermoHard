@@ -120,7 +120,17 @@ export function iniciarModoDueto(bancoDePalavras, listaSolucoes) {
     localStorage.removeItem("termo_dueto");
   }
 
-  if (!estado.jogoTerminado) atualizarInterface();
+  if (!estado.jogoTerminado) {
+    atualizarInterface();
+  } else {
+    setTimeout(
+      () =>
+        mostrarMensagem(
+          `Palavras do Dueto: ${estado.palavrasAlvo.join(" e ")}`,
+        ),
+      500,
+    );
+  }
 }
 
 function aoClicarCelula(linhaClicada, colunaClicada, boardIndex) {
@@ -225,7 +235,13 @@ function submeterPalpite() {
   ) {
     estado.jogoTerminado = true;
     salvarProgresso();
-    setTimeout(() => mostrarMensagem("Incrível! Venceu o Dueto!"), 3000);
+    setTimeout(
+      () =>
+        mostrarMensagem(
+          `Incrível! Venceu o Dueto! Palavras: ${estado.palavrasAlvo.join(" e ")}`,
+        ),
+      3000,
+    );
   } else {
     estado.linhaAtual++;
     if (estado.linhaAtual >= estado.maxTentativas) {

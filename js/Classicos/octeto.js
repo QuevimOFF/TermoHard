@@ -104,7 +104,17 @@ export function iniciarModoOcteto(bancoDePalavras, listaSolucoes) {
     estado.statusBoards = Array(estado.qtdBoards).fill("jogando");
     localStorage.removeItem("termo_octeto");
   }
-  if (!estado.jogoTerminado) atualizarInterface();
+  if (!estado.jogoTerminado) {
+    atualizarInterface();
+  } else {
+    setTimeout(
+      () =>
+        mostrarMensagem(
+          `Palavras do Octeto: ${estado.palavrasAlvo.join(", ")}`,
+        ),
+      500,
+    );
+  }
 }
 
 function aoClicarCelula(linhaClicada, colunaClicada, boardIndex) {
@@ -200,7 +210,13 @@ function submeterPalpite() {
   if (todosVencidos || estado.statusBoards.every((s) => s === "venceu")) {
     estado.jogoTerminado = true;
     salvarProgresso();
-    setTimeout(() => mostrarMensagem("Impressionante! Venceu o Octeto!"), 3000);
+    setTimeout(
+      () =>
+        mostrarMensagem(
+          `Impressionante! Venceu o Octeto! Palavras: ${estado.palavrasAlvo.join(", ")}`,
+        ),
+      3000,
+    );
   } else {
     estado.linhaAtual++;
     if (estado.linhaAtual >= estado.maxTentativas) {

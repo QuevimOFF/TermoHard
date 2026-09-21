@@ -98,6 +98,11 @@ export function iniciarModoUnico(bancoDePalavras, listaSolucoes) {
 
   if (!estado.jogoTerminado) {
     atualizarInterface();
+  } else {
+    setTimeout(
+      () => mostrarMensagem(`A palavra era: ${estado.palavraAlvo}`),
+      500,
+    );
   }
 }
 
@@ -181,14 +186,20 @@ function submeterPalpite() {
       () => animarVitoria(estado.linhaAtual, estado.tamanhoPalavra, "unico"),
       1500,
     );
-    setTimeout(() => mostrarMensagem("Esplêndido!"), 2500);
+    setTimeout(
+      () => mostrarMensagem(`Esplêndido! A palavra era: ${estado.palavraAlvo}`),
+      2500,
+    );
   } else {
     estado.linhaAtual++;
 
     if (estado.linhaAtual >= estado.maxTentativas) {
       estado.jogoTerminado = true;
       salvarProgresso(); // Grava a derrota na memória
-      setTimeout(() => mostrarMensagem(estado.palavraAlvo), 1500);
+      setTimeout(
+        () => mostrarMensagem(`Fim! A palavra era: ${estado.palavraAlvo}`),
+        1500,
+      );
     } else {
       estado.palpiteAtual = Array(estado.tamanhoPalavra).fill("");
       estado.cursorAtivo = 0;
