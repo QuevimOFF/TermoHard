@@ -136,10 +136,20 @@ header span {
   gap: 15px;
 }
 
+.layout-octeto .board {
+  grid-template-rows: repeat(13, minmax(0, 1fr));
+  aspect-ratio: auto;
+}
+
 .layout-hexateto {
   grid-template-columns: repeat(4, minmax(0, 180px));
   justify-content: center;
   gap: 10px;
+}
+
+.layout-hexateto .board {
+  grid-template-rows: repeat(21, minmax(0, 1fr));
+  aspect-ratio: auto;
 }
 
 /* ESTRUTURA DO TABULEIRO */
@@ -184,6 +194,13 @@ header span {
   border-width: 1px;
   font-size: 1.1rem;
   gap: 3px;
+}
+
+.layout-octeto .cell,
+.layout-hexateto .cell {
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1;
 }
 
 .cell.filled {
@@ -314,6 +331,13 @@ header span {
     gap: 3px;
   }
 
+  .layout-octeto,
+  .layout-hexateto {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    overflow-y: auto;
+  }
+
   .key {
     height: 48px;
     font-size: 0.95rem;
@@ -324,6 +348,13 @@ header span {
   }
   .keyboard-row {
     gap: 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  #board-container.layout-octeto,
+  #board-container.layout-hexateto {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
