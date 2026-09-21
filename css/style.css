@@ -320,7 +320,7 @@ header span {
 
   .layout-quarteto {
     grid-template-columns: repeat(2, minmax(0, 150px));
-    align-content: center;
+    align-content: start;
   }
 
   .layout-unico .cell {
