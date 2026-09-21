@@ -5,6 +5,11 @@ import {
   iniciarModoQuarteto,
   receberTeclaQuarteto,
 } from "./Classicos/quarteto.js";
+import { iniciarModoOcteto, receberTeclaOcteto } from "./Classicos/octeto.js";
+import {
+  iniciarModoHexateto,
+  receberTeclaHexateto,
+} from "./Classicos/hexateto.js";
 
 let bancoDePalavras = {};
 let listaSolucoes = [];
@@ -20,6 +25,7 @@ async function arrancarJogo() {
   configurarMenu();
   iniciarModoSelecionado();
   escutarTecladoFisico();
+  gerirTutorial(); // ADICIONA ESTA LINHA AQUI!
 }
 
 function configurarMenu() {
@@ -45,6 +51,10 @@ function iniciarModoSelecionado() {
     iniciarModoDueto(bancoDePalavras, listaSolucoes);
   else if (modoAtual === "quarteto")
     iniciarModoQuarteto(bancoDePalavras, listaSolucoes);
+  else if (modoAtual === "octeto")
+    iniciarModoOcteto(bancoDePalavras, listaSolucoes);
+  else if (modoAtual === "hexateto")
+    iniciarModoHexateto(bancoDePalavras, listaSolucoes);
 }
 
 async function carregarJSON() {
@@ -80,6 +90,8 @@ function processarInputGeral(tecla) {
   if (modoAtual === "unico") receberTeclaUnico(tecla);
   else if (modoAtual === "dueto") receberTeclaDueto(tecla);
   else if (modoAtual === "quarteto") receberTeclaQuarteto(tecla);
+  else if (modoAtual === "octeto") receberTeclaOcteto(tecla);
+  else if (modoAtual === "hexateto") receberTeclaHexateto(tecla);
 }
 
 function escutarTecladoFisico() {
@@ -120,6 +132,38 @@ function iniciarContadorDiario() {
 
   atualizarContador();
   setInterval(atualizarContador, 1000);
+}
+
+function gerirTutorial() {
+  const modal = document.getElementById("modal-tutorial");
+  const btnFechar = document.getElementById("fechar-tutorial");
+  const btnAbrir = document.getElementById("btn-tutorial");
+
+  function abrirModal() {
+    modal.classList.remove("hidden");
+    // Remove o foco do botão para não ativar ao carregar no Enter acidentalmente
+    btnAbrir.blur();
+  }
+
+  function fecharModal() {
+    modal.classList.add("hidden");
+    // Guarda no navegador que o utilizador já viu o tutorial
+    localStorage.setItem("termo_tutorial_lido", "true");
+  }
+
+  // Eventos de clique
+  btnAbrir.addEventListener("click", abrirModal);
+  btnFechar.addEventListener("click", fecharModal);
+
+  // Fecha o modal se o jogador clicar fora da caixa na área escura
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) fecharModal();
+  });
+
+  // Se o jogador nunca tiver lido o tutorial antes, abre automaticamente
+  if (!localStorage.getItem("termo_tutorial_lido")) {
+    abrirModal();
+  }
 }
 
 arrancarJogo();

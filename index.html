@@ -11,23 +11,86 @@
   </head>
   <body>
     <header>
+      <!-- Botão de Ajuda Novo -->
+      <button id="btn-tutorial" class="icon-btn" title="Como Jogar">?</button>
+
       <span>TERMO HARD</span>
       <select id="seletor-modo">
         <option value="unico">Termo</option>
         <option value="dueto">Dueto</option>
         <option value="quarteto">Quarteto</option>
+        <option value="octeto">Octeto</option>
+        <option value="hexateto">Hexateto</option>
       </select>
       <div id="contador-diario" class="contador">00:00:00</div>
     </header>
 
-    <main id="board-container" class="layout-unico">
-      <!-- Os tabuleiros serão gerados aqui pelo JS -->
-    </main>
+    <!-- INÍCIO DO MODAL DE TUTORIAL -->
+    <div id="modal-tutorial" class="modal-overlay hidden">
+      <div class="modal-content">
+        <button id="fechar-tutorial" class="fechar-btn">&times;</button>
+        <h2>Como Jogar</h2>
+        <p>Adivinha a palavra secreta nas tentativas permitidas.</p>
+        <p>
+          Cada palpite tem de ser uma palavra válida de 5 letras. Pressiona
+          <strong>ENTER</strong> para submeter.
+        </p>
+        <p>
+          Após cada palpite, a cor das células mudará para mostrar o quão perto
+          estás da solução.
+        </p>
 
-    <div id="keyboard-container">
-      <!-- O teclado será gerado aqui pelo JS -->
+        <hr />
+        <h3>Exemplos</h3>
+
+        <div class="exemplo">
+          <div class="linha-exemplo">
+            <div class="cell correct">T</div>
+            <div class="cell">E</div>
+            <div class="cell">R</div>
+            <div class="cell">M</div>
+            <div class="cell">O</div>
+          </div>
+          <p>
+            A letra <strong>T</strong> faz parte da palavra e está na posição
+            correta.
+          </p>
+        </div>
+
+        <div class="exemplo">
+          <div class="linha-exemplo">
+            <div class="cell">P</div>
+            <div class="cell present">O</div>
+            <div class="cell">R</div>
+            <div class="cell">T</div>
+            <div class="cell">A</div>
+          </div>
+          <p>
+            A letra <strong>O</strong> faz parte da palavra, mas está na posição
+            errada.
+          </p>
+        </div>
+
+        <div class="exemplo">
+          <div class="linha-exemplo">
+            <div class="cell">V</div>
+            <div class="cell">I</div>
+            <div class="cell absent">D</div>
+            <div class="cell">A</div>
+            <div class="cell">S</div>
+          </div>
+          <p>A letra <strong>D</strong> não faz parte da palavra.</p>
+        </div>
+      </div>
     </div>
+    <!-- FIM DO MODAL -->
 
-    <script type="module" src="js/main.js?v=4"></script>
+    <main id="board-container" class="layout-unico">
+      <!-- Os tabuleiros são gerados aqui pelo JS -->
+    </main>
+    <div id="keyboard-container">
+      <!-- O teclado é gerado aqui pelo JS -->
+    </div>
+    <script type="module" src="js/main.js?v=5"></script>
   </body>
 </html>
