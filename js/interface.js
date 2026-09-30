@@ -117,18 +117,6 @@ export function animarErro(linhaAtual, tamanhoPalavra, boardId = "board-0") {
   }
 }
 
-export function animarVitoria(linhaAtual, tamanhoPalavra, boardId = "board-0") {
-  for (let col = 0; col < tamanhoPalavra; col++) {
-    const cell = document.getElementById(
-      `${boardId}-cell-${linhaAtual}-${col}`,
-    );
-    if (!cell) continue;
-    setTimeout(() => {
-      cell.classList.add("bounce");
-    }, col * 100);
-  }
-}
-
 export function criarTeclado(containerId, funcaoDeClique) {
   const container = document.getElementById(containerId);
   if (!container) return;

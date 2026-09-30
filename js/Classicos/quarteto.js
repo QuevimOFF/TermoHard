@@ -9,7 +9,6 @@ import {
   atualizarLinhaVisivel,
   pintarCores,
   animarErro,
-  animarVitoria,
   mostrarMensagem,
 } from "../interface.js";
 
@@ -84,9 +83,12 @@ export function iniciarModoQuarteto(bancoDePalavras, listaSolucoes) {
         ? save.statusBoards
         : Array(estado.qtdBoards).fill("jogando");
 
+    const tabuleirosResolvidos = new Set();
     estado.historico.forEach((palavra, linha) => {
       const palpiteArray = palavra.split("");
       for (let i = 0; i < estado.qtdBoards; i++) {
+        if (tabuleirosResolvidos.has(i)) continue;
+
         const resultados = avaliarPalpite(palpiteArray, estado.palavrasAlvo[i]);
         atualizarLinhaVisivel(
           palpiteArray,
@@ -103,6 +105,7 @@ export function iniciarModoQuarteto(bancoDePalavras, listaSolucoes) {
           `board-${i}`,
           true,
         );
+        if (palavra === estado.palavrasAlvo[i]) tabuleirosResolvidos.add(i);
       }
     });
 
@@ -212,11 +215,6 @@ function submeterPalpite() {
 
     if (palpiteString === alvo) {
       estado.statusBoards[i] = "venceu";
-      setTimeout(
-        () =>
-          animarVitoria(estado.linhaAtual, estado.tamanhoPalavra, `board-${i}`),
-        1500,
-      );
       setTimeout(() => {
         document.getElementById(`board-${i}`).classList.add("vencido");
       }, 2500);

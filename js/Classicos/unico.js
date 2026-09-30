@@ -9,7 +9,6 @@ import {
   atualizarLinhaVisivel,
   pintarCores,
   animarErro,
-  animarVitoria,
   mostrarMensagem,
 } from "../interface.js";
 
@@ -182,10 +181,6 @@ function submeterPalpite() {
   if (palpiteString === estado.palavraAlvo) {
     estado.jogoTerminado = true;
     salvarProgresso(); // Grava a vitória na memória
-    setTimeout(
-      () => animarVitoria(estado.linhaAtual, estado.tamanhoPalavra, "unico"),
-      1500,
-    );
     setTimeout(
       () => mostrarMensagem(`Esplêndido! A palavra era: ${estado.palavraAlvo}`),
       2500,
