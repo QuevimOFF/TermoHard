@@ -12,8 +12,11 @@ import {
 } from "./Classicos/hexateto.js";
 
 let bancoDePalavras = {};
-let listaSolucoes = [];
 let modoAtual = "unico";
+let inicioCronometro = null;
+let intervaloCronometro = null;
+let tempoDecorrido = 0;
+let cronometroEncerrado = false;
 
 async function arrancarJogo() {
   const carregouDicionario = await carregarJSON();
@@ -21,7 +24,6 @@ async function arrancarJogo() {
     mostrarMensagem("Não foi possível carregar o dicionário.");
     return;
   }
-  iniciarContadorDiario();
   configurarMenu();
   iniciarModoSelecionado();
   escutarTecladoFisico();
@@ -47,39 +49,36 @@ function iniciarModoSelecionado() {
     container.scrollTop = 0;
   }
 
-  if (modoAtual === "unico") iniciarModoUnico(bancoDePalavras, listaSolucoes);
+  if (modoAtual === "unico")
+    iniciarModoUnico(bancoDePalavras, bancoDePalavras[5]);
   else if (modoAtual === "dueto")
-    iniciarModoDueto(bancoDePalavras, listaSolucoes);
+    iniciarModoDueto(bancoDePalavras, bancoDePalavras[5]);
   else if (modoAtual === "quarteto")
-    iniciarModoQuarteto(bancoDePalavras, listaSolucoes);
+    iniciarModoQuarteto(bancoDePalavras, bancoDePalavras[5]);
   else if (modoAtual === "octeto")
-    iniciarModoOcteto(bancoDePalavras, listaSolucoes);
+    iniciarModoOcteto(bancoDePalavras, bancoDePalavras[5]);
   else if (modoAtual === "hexateto")
-    iniciarModoHexateto(bancoDePalavras, listaSolucoes);
+    iniciarModoHexateto(bancoDePalavras, bancoDePalavras[5]);
+
+  sincronizarCronometro();
 }
 
 async function carregarJSON() {
   try {
-    const [resValidas, resSolucoes] = await Promise.all([
-      fetch("./js/palavras5.json"),
-      fetch("./js/soluções.json"),
-    ]);
+    const respostaPalavras = await fetch("./js/palavras.json");
+    if (!respostaPalavras.ok)
+      throw new Error("Erro na rede ao carregar o dicionário");
 
-    if (!resValidas.ok || !resSolucoes.ok)
-      throw new Error("Erro na rede ao carregar JSON");
+    const dadosPalavras = await respostaPalavras.json();
 
-    const dadosValidas = await resValidas.json();
-    const dadosSolucoes = await resSolucoes.json();
-
-    const listaPalavras = Array.isArray(dadosValidas)
-      ? dadosValidas
-      : dadosValidas["5"];
+    const listaPalavras = Array.isArray(dadosPalavras)
+      ? dadosPalavras
+      : dadosPalavras["5"];
     if (!Array.isArray(listaPalavras) || listaPalavras.length === 0) {
       throw new Error("O dicionário não contém palavras de cinco letras");
     }
 
-    bancoDePalavras = { ...dadosValidas, 5: listaPalavras };
-    listaSolucoes = dadosSolucoes;
+    bancoDePalavras = { ...dadosPalavras, 5: listaPalavras };
     return true;
   } catch (erro) {
     console.error("Erro fatal ao carregar JSON:", erro);
@@ -88,11 +87,15 @@ async function carregarJSON() {
 }
 
 function processarInputGeral(tecla) {
+  if (/^[A-Z]$/.test(tecla)) iniciarCronometro();
+
   if (modoAtual === "unico") receberTeclaUnico(tecla);
   else if (modoAtual === "dueto") receberTeclaDueto(tecla);
   else if (modoAtual === "quarteto") receberTeclaQuarteto(tecla);
   else if (modoAtual === "octeto") receberTeclaOcteto(tecla);
   else if (modoAtual === "hexateto") receberTeclaHexateto(tecla);
+
+  verificarConclusao();
 }
 
 function escutarTecladoFisico() {
@@ -104,35 +107,80 @@ function escutarTecladoFisico() {
   });
 }
 
-function iniciarContadorDiario() {
-  const elementoContador = document.getElementById("contador-diario");
-  if (!elementoContador) return;
+function sincronizarCronometro() {
+  clearInterval(intervaloCronometro);
+  inicioCronometro = null;
+  tempoDecorrido = 0;
 
-  function atualizarContador() {
-    const agora = new Date();
-    const utc = agora.getTime() + agora.getTimezoneOffset() * 60000;
-    const dataBrasilia = new Date(utc - 3600000 * 3);
-
-    const proximaMeiaNoite = new Date(dataBrasilia);
-    proximaMeiaNoite.setHours(24, 0, 0, 0);
-
-    const diferenca = proximaMeiaNoite - dataBrasilia;
-
-    const horas = Math.floor((diferenca / (1000 * 60 * 60)) % 24)
-      .toString()
-      .padStart(2, "0");
-    const minutos = Math.floor((diferenca / 1000 / 60) % 60)
-      .toString()
-      .padStart(2, "0");
-    const segundos = Math.floor((diferenca / 1000) % 60)
-      .toString()
-      .padStart(2, "0");
-
-    elementoContador.textContent = `${horas}:${minutos}:${segundos}`;
+  let progresso = null;
+  try {
+    progresso = JSON.parse(localStorage.getItem(`termo_${modoAtual}`));
+  } catch {
+    localStorage.removeItem(`termo_${modoAtual}`);
   }
 
-  atualizarContador();
-  setInterval(atualizarContador, 1000);
+  cronometroEncerrado = Boolean(progresso?.jogoTerminado);
+  const tempoSalvo = localStorage.getItem(`termo_speedrun_${modoAtual}`);
+  const tempoNumerico = Number(tempoSalvo);
+  if (
+    cronometroEncerrado &&
+    tempoSalvo !== null &&
+    Number.isFinite(tempoNumerico) &&
+    tempoNumerico >= 0
+  ) {
+    tempoDecorrido = tempoNumerico;
+    atualizarCronometro(tempoDecorrido);
+  } else {
+    atualizarCronometro(null);
+  }
+}
+
+function iniciarCronometro() {
+  if (inicioCronometro !== null || cronometroEncerrado) return;
+
+  inicioCronometro = performance.now();
+  intervaloCronometro = setInterval(() => {
+    atualizarCronometro(tempoDecorrido + performance.now() - inicioCronometro);
+  }, 30);
+}
+
+function verificarConclusao() {
+  if (inicioCronometro === null) return;
+
+  try {
+    const progresso = JSON.parse(localStorage.getItem(`termo_${modoAtual}`));
+    if (progresso?.jogoTerminado) pararCronometro();
+  } catch {
+    // O progresso inválido não deve interromper a partida.
+  }
+}
+
+function pararCronometro() {
+  tempoDecorrido += performance.now() - inicioCronometro;
+  inicioCronometro = null;
+  cronometroEncerrado = true;
+  clearInterval(intervaloCronometro);
+  atualizarCronometro(tempoDecorrido);
+  localStorage.setItem(`termo_speedrun_${modoAtual}`, String(tempoDecorrido));
+}
+
+function atualizarCronometro(milissegundos) {
+  const elemento = document.getElementById("cronometro-speedrun");
+  if (!elemento) return;
+  if (milissegundos === null) {
+    elemento.textContent = "--:--.--";
+    return;
+  }
+
+  const centesimosTotais = Math.floor(milissegundos / 10);
+  const minutos = Math.floor(centesimosTotais / 6000)
+    .toString()
+    .padStart(2, "0");
+  const segundos = (Math.floor(centesimosTotais / 100) % 60)
+    .toString()
+    .padStart(2, "0");
+  const centesimos = (centesimosTotais % 100).toString().padStart(2, "0");
+  elemento.textContent = `${minutos}:${segundos}.${centesimos}`;
 }
 
 function gerirTutorial() {

@@ -57,15 +57,18 @@ header span {
   outline: none;
 }
 
-.contador {
+.cronometro {
   font-family: monospace;
   font-size: 1rem;
   font-weight: bold;
   color: #fff;
-  background-color: #3aaa35;
+  background-color: #242426;
+  border: 1px solid var(--border-color);
   padding: 6px 12px;
   border-radius: 5px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
+  min-width: 96px;
 }
 
 /* ================= ÁREA DOS TABULEIROS ================= */
