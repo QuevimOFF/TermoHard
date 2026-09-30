@@ -12,6 +12,7 @@ import {
 } from "./Classicos/hexateto.js";
 
 let bancoDePalavras = {};
+let listaRespostas = [];
 let modoAtual = "unico";
 let inicioCronometro = null;
 let intervaloCronometro = null;
@@ -19,9 +20,9 @@ let tempoDecorrido = 0;
 let cronometroEncerrado = false;
 
 async function arrancarJogo() {
-  const carregouDicionario = await carregarJSON();
-  if (!carregouDicionario) {
-    mostrarMensagem("Não foi possível carregar o dicionário.");
+  const carregouBancos = await carregarJSON();
+  if (!carregouBancos) {
+    mostrarMensagem("Não foi possível carregar os bancos de palavras.");
     return;
   }
   configurarMenu();
@@ -50,26 +51,30 @@ function iniciarModoSelecionado() {
   }
 
   if (modoAtual === "unico")
-    iniciarModoUnico(bancoDePalavras, bancoDePalavras[5]);
+    iniciarModoUnico(bancoDePalavras, listaRespostas);
   else if (modoAtual === "dueto")
-    iniciarModoDueto(bancoDePalavras, bancoDePalavras[5]);
+    iniciarModoDueto(bancoDePalavras, listaRespostas);
   else if (modoAtual === "quarteto")
-    iniciarModoQuarteto(bancoDePalavras, bancoDePalavras[5]);
+    iniciarModoQuarteto(bancoDePalavras, listaRespostas);
   else if (modoAtual === "octeto")
-    iniciarModoOcteto(bancoDePalavras, bancoDePalavras[5]);
+    iniciarModoOcteto(bancoDePalavras, listaRespostas);
   else if (modoAtual === "hexateto")
-    iniciarModoHexateto(bancoDePalavras, bancoDePalavras[5]);
+    iniciarModoHexateto(bancoDePalavras, listaRespostas);
 
   sincronizarCronometro();
 }
 
 async function carregarJSON() {
   try {
-    const respostaPalavras = await fetch("./js/palavras.json");
-    if (!respostaPalavras.ok)
-      throw new Error("Erro na rede ao carregar o dicionário");
+    const [respostaPalavras, respostaRespostas] = await Promise.all([
+      fetch("./js/palavras.json"),
+      fetch("./js/respostas.json"),
+    ]);
+    if (!respostaPalavras.ok || !respostaRespostas.ok)
+      throw new Error("Erro na rede ao carregar os bancos de palavras");
 
     const dadosPalavras = await respostaPalavras.json();
+    const dadosRespostas = await respostaRespostas.json();
 
     const listaPalavras = Array.isArray(dadosPalavras)
       ? dadosPalavras
@@ -77,8 +82,21 @@ async function carregarJSON() {
     if (!Array.isArray(listaPalavras) || listaPalavras.length === 0) {
       throw new Error("O dicionário não contém palavras de cinco letras");
     }
+    if (!Array.isArray(dadosRespostas) || dadosRespostas.length === 0) {
+      throw new Error("O banco de respostas está vazio ou inválido");
+    }
 
-    bancoDePalavras = { ...dadosPalavras, 5: listaPalavras };
+    listaRespostas = dadosRespostas.map((palavra) =>
+      palavra
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase(),
+    );
+    const palavrasPermitidas = new Set([
+      ...listaPalavras.map((palavra) => palavra.toLowerCase()),
+      ...listaRespostas,
+    ]);
+    bancoDePalavras = { ...dadosPalavras, 5: [...palavrasPermitidas] };
     return true;
   } catch (erro) {
     console.error("Erro fatal ao carregar JSON:", erro);
