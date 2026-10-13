@@ -25,6 +25,10 @@ function sortearLimiteTentativas() {
   return Math.floor(Math.random() * 95) + 6;
 }
 
+function mensagemFinal() {
+  return `A palavra era: ${estado.palavraAlvo}. Você tinha ${estado.maxTentativas} tentativas.`;
+}
+
 function salvarProgresso() {
   localStorage.setItem(
     "termo_cego",
@@ -112,7 +116,7 @@ export function iniciarModoCego(bancoDePalavras, listaSolucoes) {
     adicionarLinha(estado.linhaAtual);
     atualizarInterface();
   } else if (estado.historico.length > 0) {
-    mostrarMensagem("A palavra era: " + estado.palavraAlvo);
+    mostrarMensagem(mensagemFinal());
   }
 
   container.scrollTop = container.scrollHeight;
@@ -188,7 +192,7 @@ function lidarComEnter() {
     estado.jogoTerminado = true;
     salvarProgresso();
     setTimeout(
-      () => mostrarMensagem(`Esplêndido! A palavra era: ${estado.palavraAlvo}`),
+      () => mostrarMensagem(`Esplêndido! ${mensagemFinal()}`),
       500,
     );
     return;
@@ -199,7 +203,7 @@ function lidarComEnter() {
     estado.jogoTerminado = true;
     salvarProgresso();
     setTimeout(
-      () => mostrarMensagem(`Fim! A palavra era: ${estado.palavraAlvo}`),
+      () => mostrarMensagem(`Fim! ${mensagemFinal()}`),
       500,
     );
     return;
