@@ -176,6 +176,14 @@ header span {
   max-width: 350px;
 }
 
+.layout-cego {
+  align-items: flex-start !important;
+}
+
+.layout-cego .board {
+  max-width: 350px;
+}
+
 .board.vencido {
   opacity: 0.4;
   pointer-events: none;

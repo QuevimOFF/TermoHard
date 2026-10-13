@@ -10,6 +10,7 @@ import {
   iniciarModoHexateto,
   receberTeclaHexateto,
 } from "./Classicos/hexateto.js";
+import { iniciarModoCego, receberTeclaCego } from "./Especiais/cego.js";
 
 let bancoDePalavras = {};
 let listaRespostas = [];
@@ -60,6 +61,8 @@ function iniciarModoSelecionado() {
     iniciarModoOcteto(bancoDePalavras, listaRespostas);
   else if (modoAtual === "hexateto")
     iniciarModoHexateto(bancoDePalavras, listaRespostas);
+  else if (modoAtual === "cego")
+    iniciarModoCego(bancoDePalavras, listaRespostas);
 
   sincronizarCronometro();
 }
@@ -112,6 +115,7 @@ function processarInputGeral(tecla) {
   else if (modoAtual === "quarteto") receberTeclaQuarteto(tecla);
   else if (modoAtual === "octeto") receberTeclaOcteto(tecla);
   else if (modoAtual === "hexateto") receberTeclaHexateto(tecla);
+  else if (modoAtual === "cego") receberTeclaCego(tecla);
 
   verificarConclusao();
 }

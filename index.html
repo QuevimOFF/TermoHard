@@ -26,6 +26,7 @@
         <option value="quarteto">Quarteto</option>
         <option value="octeto">Octeto</option>
         <option value="hexateto">Hexateto</option>
+        <option value="cego">Cego</option>
       </select>
       <div
         id="cronometro-speedrun"
@@ -50,6 +51,11 @@
         <p>
           Após cada palpite, a cor das células mudará para mostrar o quão perto
           estás da solução.
+        </p>
+        <p>
+          No modo <strong>Cego</strong>, o limite é aleatório (de 6 a 100
+          tentativas) e fica oculto. Apenas as letras na posição correta ficam
+          verdes; as outras não dão pistas.
         </p>
 
         <hr />
@@ -103,6 +109,6 @@
     <div id="keyboard-container">
       <!-- O teclado é gerado aqui pelo JS -->
     </div>
-    <script type="module" src="js/main.js?v=7"></script>
+    <script type="module" src="js/main.js?v=8"></script>
   </body>
 </html>
